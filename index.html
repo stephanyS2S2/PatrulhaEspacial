@@ -31,7 +31,6 @@
 
         .hud-item { background: rgba(0, 0, 0, 0.6); padding: 8px 15px; border-radius: 20px; border: 1px solid #415a77; }
 
-        /* Desenho detalhado do meteoro com SVG */
         .meteor-wrapper {
             position: absolute; width: 80px; height: 80px;
             z-index: 5; display: flex; justify-content: center; align-items: center;
@@ -58,7 +57,6 @@
             filter: drop-shadow(0 0 15px rgba(0, 240, 255, 1)) hue-rotate(120deg) !important;
         }
 
-        /* Canhão de Defesa */
         #cannon {
             position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
             width: 40px; height: 35px; background: linear-gradient(to top, #415a77, #e0e1dd);
@@ -66,7 +64,6 @@
             box-shadow: 0 0 10px #00f0ff;
         }
 
-        /* Raio Laser Animação */
         .laser-beam {
             position: absolute; width: 6px; background: #00f0ff;
             box-shadow: 0 0 15px #00f0ff, 0 0 30px #ffffff;
@@ -128,4 +125,97 @@
             display: flex; align-items: center; background: rgba(255,255,255,0.1);
             border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #415a77;
         }
-        .avatar { width: 70px; height: 70px; background:
+        .avatar { width: 70px; height: 70px; background: #ff9f1c; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; border: 2px solid #fff; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="earth-surface"></div>
+    <div id="cannon"></div>
+
+    <div id="hud">
+        <div class="hud-item" id="lives-display">Vidas: ❤️❤️❤️</div>
+        <div class="hud-item" id="phase-display">Fase 1</div>
+        <button id="ice-power-btn" onclick="useIcePower()">❄️ USAR GELO (1)</button>
+    </div>
+
+    <div id="controls-panel"></div>
+
+    <!-- 1. Tela Inicial -->
+    <div id="start-screen" class="overlay">
+        <h1>DEFENSORES DA TERRA</h1>
+        <p>Meteoros numéricos estão caindo! Resolva as somas corretamente para disparar os lasers e proteger nosso planeta.</p>
+        <input type="text" id="player-name-input" placeholder="Digite seu nome..." maxlength="15">
+        <button class="main-btn" onclick="submitName()">INICIAR JOGO</button>
+    </div>
+
+    <!-- 2. Diálogo do Personagem -->
+    <div id="intro-screen" class="overlay" style="display: none;">
+        <div class="character-box">
+            <div class="avatar">👨‍🚀</div>
+            <div style="text-align: left;">
+                <h3 style="color: #00f0ff;" id="greeting-text">Olá, Recruta!</h3>
+                <p style="font-size: 15px; margin: 0;">Eu sou o Comandante Astro. Preciso da sua ajuda urgente para recalibrar nossos canhões de defesa laser!</p>
+            </div>
+        </div>
+        <p>Para destruir um meteoro, olhe o número nele gravado e selecione a conta de soma que resulta naquele número exato antes que ele atinja o solo!</p>
+        <div style="display: flex; gap: 15px;">
+            <button class="main-btn" onclick="startTutorial()">VER TUTORIAL</button>
+            <button class="main-btn" style="background: #415a77; box-shadow: none;" onclick="skipTutorial()">PULAR TUTORIAL</button>
+        </div>
+    </div>
+
+    <!-- 3. Tela de Início da Fase (Sem mostrar velocidades ou poderes) -->
+    <div id="phase-start-screen" class="overlay" style="display: none;">
+        <h1 id="phase-title">FASE 1</h1>
+        <p id="phase-desc">Prepare-se para defender o planeta!</p>
+        <button class="main-btn" onclick="startCurrentPhase()">COMEÇAR FASE</button>
+    </div>
+
+    <!-- 4. Tela de Encerramento (Apenas Acertos e Erros) -->
+    <div id="end-screen" class="overlay" style="display: none;">
+        <h1 id="end-title">FIM DE JOGO</h1>
+        <p id="end-stats"></p>
+        <button class="main-btn" onclick="location.reload()">JOGAR NOVAMENTE</button>
+    </div>
+</div>
+
+<script>
+const AudioFX = {
+    ctx: null,
+    init() {
+        try {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+        } catch (e) {
+            console.warn("Áudio não suportado:", e);
+        }
+    },
+    playLaser() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(900, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+    },
+    playExplosion() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gain.gain
