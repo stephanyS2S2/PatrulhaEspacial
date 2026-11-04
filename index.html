@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensores da Terra - Salve o Planeta!</title>
+    <style>
+        /* ==========================================================================
+           1. ESTILOS GERAIS E LAYOUT DA TELA
+           ========================================================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #050515; color: #fff; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        #game-container {
+            width: 100vw; height: 100vh; max-width: 800px; max-height: 600px;
+            background: linear-gradient(to bottom, #020208 0%, #0d1b2a 70%, #1b263b 100%);
+            position: relative; overflow: hidden; border: 2px solid #415a77; box-shadow: 0 0 20px rgba(0,255,255,0.2);
+        }
+
+        /* Efeito de Estrelas de Fundo */
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.8; }
+
+        /* Superfície da Terra no Fundo */
+        #earth-surface {
+            position: absolute; bottom: 0; width: 100%; height: 60px;
+            background: linear-gradient(to top, #2ec4b6, #011627);
+            border-top: 4px solid #2ec4b6; box-shadow: 0 -10px 20px rgba(46, 196, 182, 0.4);
+            z-index: 2;
+        }
+
+        /* UI Topo (Vidas, Fase, Poderes) */
+        #hud {
+            position: absolute; top: 10px; left: 10px; right: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 10; font-weight: bold; font-size: 18px; text-shadow: 2px 2px 4px #000;
+        }
+
+        .hud-item { background: rgba(0, 0, 0, 0.6); padding: 8px 15px; border-radius: 20px; border: 1px solid #415a77; }
+
+        /* Elemento do Meteoro */
+        .meteor {
+            position: absolute; width: 70px; height: 70px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff9f1c, #e71d36);
+            box-shadow: 0 0 15px #ff9f1c; display: flex; justify-content: center; align-items: center;
+            font-size: 28px; font-weight: bold; color: white; text-shadow: 2px 2px 4px #000;
+            z-index: 5; transition: border 0.3s;
+        }
+
+        .meteor.life-meteor { background: radial-gradient(circle at 30% 30%, #2ec4b6, #011627); box-shadow: 0 0 15px #2ec4b6; border: 2px solid #fff; }
+        .meteor.ice-meteor { background: radial-gradient(circle at 30% 30%, #00b4d8, #03045e); box-shadow: 0 0 15px #00b4d8; border: 2px solid #fff; }
+        .meteor.frozen { box-shadow: 0 0 25px #00f0ff !important; filter: hue-rotate(90deg); }
+
+        /* Canhão do Laser */
+        #cannon {
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 30px; background: #e0e1dd; border-radius: 5px 5px 0 0; z-index: 4;
+        }
+
+        /* Feixe de Laser */
+        .laser-beam {
+            position: absolute; width: 6px; background: #00f0ff; box-shadow: 0 0 10px #00f0ff;
+            z-index: 4; transform-origin: bottom center;
+        }
+
+        /* Área de Painel/Botoes de Opções (Alternativas) */
+        #controls-panel {
+            position: absolute; bottom: 80px; width: 100%; display: flex;
+            justify-content: center; gap: 15px; z-index: 10; padding: 0 20px;
+        }
+
+        .option-btn {
+            background: linear-gradient(to bottom, #3a86ff, #03045e); color: white;
+            border: 2px solid #00f0ff; padding: 12px 25px; font-size: 20px; font-weight: bold;
+            border-radius: 10px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .option-btn:hover { transform: scale(1.05); background: linear-gradient(to bottom, #4ea8de, #0077b6); }
+        .option-btn:active { transform: scale(0.95); }
+
+        /* Botão do Poder de Gelo */
+        #ice-power-btn {
+            background: linear-gradient(to bottom, #90e0ef, #00b4d8); color: #03045e;
+            border: 2px solid #fff; padding: 8px 15px; border-radius: 20px; font-weight: bold;
+            cursor: pointer; display: none; box-shadow: 0 0 10px #00b4d8;
+        }
+        #ice-power-btn.active { display: inline-block; animation: pulse 1s infinite alternate; }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
+
+        /* Popups, Modais e Telas de Transição */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 5, 21, 0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 30px;
+        }
+
+        .overlay h1 { font-size: 36px; color: #00f0ff; margin-bottom: 15px; text-shadow: 0 0 10px #00f0ff; }
+        .overlay p { font-size: 18px; margin-bottom: 20px; max-width: 600px; line-height: 1.4; color: #e0e1dd; }
+
+        input[type="text"] {
+            padding: 10px 15px; font-size: 18px; border-radius: 8px; border: 2px solid #00f0ff;
+            outline: none; margin-bottom: 20px; text-align: center; background: #0d1b2a; color: #fff;
+        }
+
+        .main-btn {
+            background: #ff0054; color: white; border: none; padding: 12px 30px;
+            font-size: 20px; font-weight: bold; border-radius: 25px; cursor: pointer;
+            box-shadow: 0 0 15px #ff0054; transition: 0.2s;
+        }
+        .main-btn:hover { transform: scale(1.05); background: #ff5400; box-shadow: 0 0 20px #ff5400; }
+
+        /* Personagem Guia (Tutorial) */
+        .character-box {
+            display: flex; align-items: center; background: rgba(255,255,255,0.1);
+            border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #415a77;
+        }
+        .avatar { width: 70px; height: 70px; background: #ff9f1c; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; border: 2px solid #fff; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- Fundo da Superfície da Terra -->
+    <div id="earth-surface"></div>
+    <div id="cannon"></div>
+
+    <!-- Interface HUD -->
+    <div id="hud">
+        <div class="hud-item" id="lives-display">Vidas: ❤️❤️❤️</div>
+        <div class="hud-item" id="phase-display">Fase 1</div>
+        <button id="ice-power-btn" onclick="useIcePower()">❄️ USAR GELO (1)</button>
+    </div>
+
+    <!-- Painel de Seleção das Contas -->
+    <div id="controls-panel"></div>
+
+    <!-- OVERLAYS / TELAS DO JOGO -->
+
+    <!-- 1. Tela Inicial -->
+    <div id="start-screen" class="overlay">
+        <h1>DEFENSORES DA TERRA</h1>
+        <p>Meteoros numéricos estão caindo! Resolva as somas corretamente para disparar os lasers e proteger nosso planeta.</p>
+        <input type="text" id="player-name-input" placeholder="Digite seu nome..." maxlength="15">
+        <button class="main-btn" onclick="submitName()">INICIAR JOGO</button>
+    </div>
+
+    <!-- 2. Diálogo do Personagem + Apresentação -->
+    <div id="intro-screen" class="overlay" style="display: none;">
+        <div class="character-box">
+            <div class="avatar">👨‍🚀</div>
+            <div style="text-align: left;">
+                <h3 style="color: #00f0ff;" id="greeting-text">Olá, Recruta!</h3>
+                <p style="font-size: 15px; margin: 0;">Eu sou o Comandante Astro. Preciso da sua ajuda urgente para recalibrar nossos canhões de defesa laser!</p>
+            </div>
+        </div>
+        <p>Para destruir um meteoro, olhe o número nele gravado e selecione a conta de soma que resulta naquele número exato antes que ele atinja o solo!</p>
+        <div style="display: flex; gap: 15px;">
+            <button class="main-btn" onclick="startTutorial()">VER TUTORIAL</button>
+            <button class="main-btn" style="background: #415a77; box-shadow: none;" onclick="skipTutorial()">PULAR TUTORIAL</button>
+        </div>
+    </div>
+
+    <!-- 3. Tela de Início da Fase -->
+    <div id="phase-start-screen" class="overlay" style="display: none;">
+        <h1 id="phase-title">FASE 1</h1>
+        <p id="phase-desc">Prepare-se!</
