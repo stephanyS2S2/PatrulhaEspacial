@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Defensores da Terra - Salve o Planeta!</title>
     <style>
-        /* ==========================================================================
-           1. ESTILOS GERAIS E LAYOUT DA TELA
-           ========================================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #050515; color: #fff; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
         
@@ -17,10 +14,8 @@
             position: relative; overflow: hidden; border: 2px solid #415a77; box-shadow: 0 0 20px rgba(0,255,255,0.2);
         }
 
-        /* Efeito de Estrelas de Fundo */
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.8; }
 
-        /* Superfície da Terra no Fundo */
         #earth-surface {
             position: absolute; bottom: 0; width: 100%; height: 60px;
             background: linear-gradient(to top, #2ec4b6, #011627);
@@ -28,7 +23,6 @@
             z-index: 2;
         }
 
-        /* UI Topo (Vidas, Fase, Poderes) */
         #hud {
             position: absolute; top: 10px; left: 10px; right: 10px;
             display: flex; justify-content: space-between; align-items: center;
@@ -37,7 +31,6 @@
 
         .hud-item { background: rgba(0, 0, 0, 0.6); padding: 8px 15px; border-radius: 20px; border: 1px solid #415a77; }
 
-        /* Elemento do Meteoro */
         .meteor {
             position: absolute; width: 70px; height: 70px; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #ff9f1c, #e71d36);
@@ -50,19 +43,16 @@
         .meteor.ice-meteor { background: radial-gradient(circle at 30% 30%, #00b4d8, #03045e); box-shadow: 0 0 15px #00b4d8; border: 2px solid #fff; }
         .meteor.frozen { box-shadow: 0 0 25px #00f0ff !important; filter: hue-rotate(90deg); }
 
-        /* Canhão do Laser */
         #cannon {
             position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
             width: 40px; height: 30px; background: #e0e1dd; border-radius: 5px 5px 0 0; z-index: 4;
         }
 
-        /* Feixe de Laser */
         .laser-beam {
             position: absolute; width: 6px; background: #00f0ff; box-shadow: 0 0 10px #00f0ff;
             z-index: 4; transform-origin: bottom center;
         }
 
-        /* Área de Painel/Botoes de Opções (Alternativas) */
         #controls-panel {
             position: absolute; bottom: 80px; width: 100%; display: flex;
             justify-content: center; gap: 15px; z-index: 10; padding: 0 20px;
@@ -77,7 +67,6 @@
         .option-btn:hover { transform: scale(1.05); background: linear-gradient(to bottom, #4ea8de, #0077b6); }
         .option-btn:active { transform: scale(0.95); }
 
-        /* Botão do Poder de Gelo */
         #ice-power-btn {
             background: linear-gradient(to bottom, #90e0ef, #00b4d8); color: #03045e;
             border: 2px solid #fff; padding: 8px 15px; border-radius: 20px; font-weight: bold;
@@ -87,10 +76,9 @@
 
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
 
-        /* Popups, Modais e Telas de Transição */
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 5, 21, 0.9); display: flex; flex-direction: column;
+            background: rgba(5, 5, 21, 0.95); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 30px;
         }
 
@@ -109,7 +97,6 @@
         }
         .main-btn:hover { transform: scale(1.05); background: #ff5400; box-shadow: 0 0 20px #ff5400; }
 
-        /* Personagem Guia (Tutorial) */
         .character-box {
             display: flex; align-items: center; background: rgba(255,255,255,0.1);
             border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #415a77;
@@ -120,21 +107,16 @@
 <body>
 
 <div id="game-container">
-    <!-- Fundo da Superfície da Terra -->
     <div id="earth-surface"></div>
     <div id="cannon"></div>
 
-    <!-- Interface HUD -->
     <div id="hud">
         <div class="hud-item" id="lives-display">Vidas: ❤️❤️❤️</div>
         <div class="hud-item" id="phase-display">Fase 1</div>
         <button id="ice-power-btn" onclick="useIcePower()">❄️ USAR GELO (1)</button>
     </div>
 
-    <!-- Painel de Seleção das Contas -->
     <div id="controls-panel"></div>
-
-    <!-- OVERLAYS / TELAS DO JOGO -->
 
     <!-- 1. Tela Inicial -->
     <div id="start-screen" class="overlay">
@@ -144,7 +126,7 @@
         <button class="main-btn" onclick="submitName()">INICIAR JOGO</button>
     </div>
 
-    <!-- 2. Diálogo do Personagem + Apresentação -->
+    <!-- 2. Diálogo do Personagem -->
     <div id="intro-screen" class="overlay" style="display: none;">
         <div class="character-box">
             <div class="avatar">👨‍🚀</div>
@@ -163,4 +145,525 @@
     <!-- 3. Tela de Início da Fase -->
     <div id="phase-start-screen" class="overlay" style="display: none;">
         <h1 id="phase-title">FASE 1</h1>
-        <p id="phase-desc">Prepare-se!</
+        <p id="phase-desc">Prepare-se!</p>
+        <button class="main-btn" onclick="startCurrentPhase()">COMEÇAR FASE</button>
+    </div>
+
+    <!-- 4. Tela de Game Over / Vitória -->
+    <div id="end-screen" class="overlay" style="display: none;">
+        <h1 id="end-title">FIM DE JOGO</h1>
+        <p id="end-stats">Estatísticas...</p>
+        <button class="main-btn" onclick="location.reload()">JOGAR NOVAMENTE</button>
+    </div>
+</div>
+
+<script>
+// Gerenciador de Áudio seguro com verificação de estado
+const AudioFX = {
+    ctx: null,
+    init() {
+        try {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+        } catch (e) {
+            console.warn("Áudio desativado ou não suportado:", e);
+        }
+    },
+    playLaser() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+    },
+    playExplosion() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.4);
+    },
+    playFall() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(150, this.ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+    },
+    playPowerup() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(600, this.ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+    }
+};
+
+let playerName = "Jogador";
+let currentPhase = 1;
+let lives = 3;
+let isTutorial = false;
+
+const phaseConfigs = {
+    1: { a: 0.25, vm: 6.0, optionsCount: 3, iceMeteor: false, lifeMeteor: false, totalMeteors: 6 },
+    2: { a: 0.40, vm: 5.0, optionsCount: 3, iceMeteor: true,  lifeMeteor: false, totalMeteors: 8 },
+    3: { a: 0.50, vm: 4.0, optionsCount: 3, iceMeteor: false, lifeMeteor: true,  totalMeteors: 8 },
+    4: { a: 0.50, vm: 3.5, optionsCount: 2, iceMeteor: true,  lifeMeteor: true,  totalMeteors: 10 },
+    5: { a: 0.60, vm: 3.5, optionsCount: 2, iceMeteor: true,  lifeMeteor: true,  totalMeteors: 10 }
+};
+
+const vi = 7.0;
+
+let meteorIndex = 1;
+let activeMeteor = null;
+let meteorAnimationId = null;
+let meteorStartTime = 0;
+let currentMeteorDuration = 0;
+let isFrozen = false;
+let freezeTimeout = null;
+let hasIcePower = false;
+
+let gameStats = {
+    startTime: 0,
+    totalTime: 0,
+    totalHits: 0,
+    totalMisses: 0,
+    phaseLogs: []
+};
+
+(function createStars() {
+    const container = document.getElementById('game-container');
+    for (let i = 0; i < 50; i++) {
+        let star = document.createElement('div');
+        star.className = 'star';
+        star.style.width = Math.random() * 3 + 'px';
+        star.style.height = star.style.width;
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 80 + '%';
+        container.appendChild(star);
+    }
+})();
+
+function submitName() {
+    AudioFX.init(); // Inicializa áudio na primeira interação
+    const input = document.getElementById('player-name-input').value.trim();
+    if (input) playerName = input;
+    document.getElementById('greeting-text').innerText = `Olá, ${playerName}!`;
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('intro-screen').style.display = 'flex';
+}
+
+function startTutorial() {
+    AudioFX.init();
+    isTutorial = true;
+    document.getElementById('intro-screen').style.display = 'none';
+    showPhaseStartScreen();
+}
+
+function skipTutorial() {
+    AudioFX.init();
+    isTutorial = false;
+    currentPhase = 1;
+    document.getElementById('intro-screen').style.display = 'none';
+    showPhaseStartScreen();
+}
+
+function showPhaseStartScreen() {
+    const screen = document.getElementById('phase-start-screen');
+    const title = document.getElementById('phase-title');
+    const desc = document.getElementById('phase-desc');
+    
+    if(isTutorial) {
+        title.innerText = "TUTORIAL";
+        desc.innerHTML = "Aprenda a jogar! Escolha a opção correta para disparar o laser no meteoro.";
+    } else {
+        title.innerText = `FASE ${currentPhase}`;
+        const cfg = phaseConfigs[currentPhase];
+        let itemsText = [];
+        if(cfg.iceMeteor) itemsText.push("❄️ Meteoro de Gelo");
+        if(cfg.lifeMeteor) itemsText.push("❤️ Meteoro de Vida");
+        
+        desc.innerHTML = `Velocidade Máxima: ${cfg.vm}s | Alternativas: ${cfg.optionsCount}<br>` + 
+                         (itemsText.length > 0 ? `Especiais nesta fase: ${itemsText.join(', ')}` : "Sem itens especiais.");
+    }
+    
+    screen.style.display = 'flex';
+}
+
+function startCurrentPhase() {
+    AudioFX.init();
+    document.getElementById('phase-start-screen').style.display = 'none';
+    if(!isTutorial && currentPhase === 1 && !gameStats.startTime) {
+        gameStats.startTime = Date.now();
+    }
+    meteorIndex = 1;
+    updateHUD();
+    spawnNextMeteor();
+}
+
+function updateHUD() {
+    let hearts = "";
+    for(let i=0; i<lives; i++) hearts += "❤️";
+    document.getElementById('lives-display').innerText = `Vidas: ${hearts}`;
+    document.getElementById('phase-display').innerText = isTutorial ? "Tutorial" : `Fase ${currentPhase}`;
+    
+    const iceBtn = document.getElementById('ice-power-btn');
+    if (hasIcePower) {
+        iceBtn.classList.add('active');
+    } else {
+        iceBtn.classList.remove('active');
+    }
+}
+
+function calculateVf(x, config) {
+    let calculated = vi - config.a * (x - 1);
+    return Math.max(calculated, config.vm);
+}
+
+function generateMathQuestion() {
+    let result = Math.floor(Math.random() * 10) + 1;
+    let n1 = Math.floor(Math.random() * result) + 1;
+    let n2 = result - n1;
+    
+    if (n2 === 0 && result > 1) {
+        n1 = result - 1;
+        n2 = 1;
+    }
+
+    return { n1, n2, targetResult: result };
+}
+
+function generateOptions(correctMath, count) {
+    let options = [`${correctMath.n1} + ${correctMath.n2}`];
+    
+    while(options.length < count) {
+        let r1 = Math.floor(Math.random() * 10) + 1;
+        let r2 = Math.floor(Math.random() * 10) + 1;
+        
+        if (r1 + r2 <= 10 && (r1 + r2) !== correctMath.targetResult) {
+            let expr = `${r1} + ${r2}`;
+            if (!options.includes(expr)) {
+                options.push(expr);
+            }
+        }
+    }
+    
+    return options.sort(() => Math.random() - 0.5);
+}
+
+function spawnNextMeteor() {
+    if (activeMeteor) clearMeteor();
+    
+    const cfg = isTutorial ? { a: 0.2, vm: 7, optionsCount: 3, totalMeteors: 3 } : phaseConfigs[currentPhase];
+    
+    if (meteorIndex > cfg.totalMeteors) {
+        if (isTutorial) {
+            isTutorial = false;
+            currentPhase = 1;
+            alert("Tutorial concluído! Vamos iniciar a Fase 1.");
+            showPhaseStartScreen();
+        } else if (currentPhase < 5) {
+            currentPhase++;
+            showPhaseStartScreen();
+        } else {
+            endGame(true);
+        }
+        return;
+    }
+
+    currentMeteorDuration = calculateVf(meteorIndex, cfg);
+
+    let type = 'normal';
+    if (!isTutorial) {
+        if (cfg.iceMeteor && meteorIndex === 3) type = 'ice';
+        if (cfg.lifeMeteor && meteorIndex === 5) type = 'life';
+    }
+
+    const mathData = generateMathQuestion();
+    
+    const meteorEl = document.createElement('div');
+    meteorEl.className = 'meteor';
+    if (type === 'life') meteorEl.classList.add('life-meteor');
+    if (type === 'ice') meteorEl.classList.add('ice-meteor');
+    
+    meteorEl.innerText = mathData.targetResult;
+    meteorEl.style.top = '0px';
+    meteorEl.style.left = `${Math.floor(Math.random() * 70) + 15}%`;
+    
+    document.getElementById('game-container').appendChild(meteorEl);
+
+    activeMeteor = {
+        element: meteorEl,
+        targetResult: mathData.targetResult,
+        type: type,
+        vf: currentMeteorDuration,
+        mathData: mathData
+    };
+
+    renderControls(generateOptions(mathData, cfg.optionsCount));
+
+    AudioFX.playFall();
+
+    meteorStartTime = Date.now();
+    animateMeteor();
+}
+
+function animateMeteor() {
+    if (!activeMeteor) return;
+
+    let elapsed = (Date.now() - meteorStartTime) / 1000;
+    
+    if (isFrozen) {
+        meteorStartTime = Date.now() - (activeMeteor.progress || 0) * currentMeteorDuration * 1000;
+        elapsed = activeMeteor.progress * currentMeteorDuration;
+    }
+
+    let progress = elapsed / currentMeteorDuration;
+    activeMeteor.progress = progress;
+
+    let maxTop = document.getElementById('game-container').clientHeight - 130;
+    let currentTop = progress * maxTop;
+
+    activeMeteor.element.style.top = `${currentTop}px`;
+
+    if (progress >= 1.0) {
+        handleImpact();
+    } else {
+        meteorAnimationId = requestAnimationFrame(animateMeteor);
+    }
+}
+
+function renderControls(options) {
+    const panel = document.getElementById('controls-panel');
+    panel.innerHTML = '';
+    
+    options.forEach(opt => {
+        let btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(opt);
+        panel.appendChild(btn);
+    });
+}
+
+function checkAnswer(selectedExpr) {
+    if (!activeMeteor) return;
+
+    let [num1, num2] = selectedExpr.split('+').map(n => parseInt(n.trim()));
+    let sum = num1 + num2;
+    let responseTime = ((Date.now() - meteorStartTime) / 1000).toFixed(2);
+    
+    let isCorrect = (sum === activeMeteor.targetResult);
+
+    if(!isTutorial) {
+        gameStats.phaseLogs.push({
+            phase: currentPhase,
+            meteorNum: meteorIndex,
+            vf: activeMeteor.vf,
+            correct: isCorrect,
+            responseTime: responseTime
+        });
+    }
+
+    if (isCorrect) {
+        if(!isTutorial) gameStats.totalHits++;
+        fireLaser(activeMeteor.element, () => {
+            if (activeMeteor.type === 'life') {
+                lives = Math.min(lives + 1, 5);
+                AudioFX.playPowerup();
+            } else if (activeMeteor.type === 'ice') {
+                hasIcePower = true;
+                AudioFX.playPowerup();
+            } else {
+                AudioFX.playLaser();
+            }
+            
+            if (isFrozen) unFreeze();
+            meteorIndex++;
+            spawnNextMeteor();
+        });
+    } else {
+        if(!isTutorial) gameStats.totalMisses++;
+        AudioFX.playExplosion();
+        lives--;
+        updateHUD();
+        
+        if (lives <= 0) {
+            endGame(false);
+        } else {
+            if (isFrozen) unFreeze();
+            meteorIndex++;
+            spawnNextMeteor();
+        }
+    }
+}
+
+function handleImpact() {
+    AudioFX.playExplosion();
+    if(!isTutorial) {
+        gameStats.totalMisses++;
+        gameStats.phaseLogs.push({
+            phase: currentPhase,
+            meteorNum: meteorIndex,
+            vf: activeMeteor.vf,
+            correct: false,
+            responseTime: currentMeteorDuration.toFixed(2) + " (Impacto)"
+        });
+    }
+
+    lives--;
+    updateHUD();
+
+    if (lives <= 0) {
+        endGame(false);
+    } else {
+        if (isFrozen) unFreeze();
+        meteorIndex++;
+        spawnNextMeteor();
+    }
+}
+
+function fireLaser(targetEl, callback) {
+    const cannon = document.getElementById('cannon');
+    const container = document.getElementById('game-container');
+    
+    let cannonRect = cannon.getBoundingClientRect();
+    let targetRect = targetEl.getBoundingClientRect();
+    let containerRect = container.getBoundingClientRect();
+
+    let startX = cannonRect.left + cannonRect.width/2 - containerRect.left;
+    let startY = cannonRect.top - containerRect.top;
+    
+    let endX = targetRect.left + targetRect.width/2 - containerRect.left;
+    let endY = targetRect.top + targetRect.height/2 - containerRect.top;
+
+    let distance = Math.hypot(endX - startX, endY - startY);
+    let angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+
+    let laser = document.createElement('div');
+    laser.className = 'laser-beam';
+    laser.style.height = `${distance}px`;
+    laser.style.left = `${startX}px`;
+    laser.style.top = `${startY}px`;
+    laser.style.transform = `rotate(${angle - 90}deg)`;
+
+    container.appendChild(laser);
+
+    setTimeout(() => {
+        laser.remove();
+        callback();
+    }, 150);
+}
+
+function useIcePower() {
+    if (!hasIcePower || isFrozen || !activeMeteor) return;
+
+    hasIcePower = false;
+    isFrozen = true;
+    updateHUD();
+
+    if (activeMeteor.element) {
+        activeMeteor.element.classList.add('frozen');
+    }
+
+    freezeTimeout = setTimeout(() => {
+        unFreeze();
+    }, 4000);
+}
+
+function unFreeze() {
+    isFrozen = false;
+    if (freezeTimeout) clearTimeout(freezeTimeout);
+    if (activeMeteor && activeMeteor.element) {
+        activeMeteor.element.classList.remove('frozen');
+    }
+}
+
+function clearMeteor() {
+    if (meteorAnimationId) cancelAnimationFrame(meteorAnimationId);
+    if (activeMeteor && activeMeteor.element) activeMeteor.element.remove();
+    activeMeteor = null;
+}
+
+function endGame(victory) {
+    clearMeteor();
+    gameStats.totalTime = Math.round((Date.now() - (gameStats.startTime || Date.now())) / 1000);
+
+    document.getElementById('controls-panel').innerHTML = '';
+    const endScreen = document.getElementById('end-screen');
+    const title = document.getElementById('end-title');
+    const statsText = document.getElementById('end-stats');
+
+    if (victory) {
+        title.innerText = "PARABÉNS! VOCÊ SALVOU A TERRA!";
+        title.style.color = "#2ec4b6";
+    } else {
+        title.innerText = "FIM DE JOGO - A TERRA FOI ATINGIDA!";
+        title.style.color = "#e71d36";
+    }
+
+    statsText.innerHTML = `
+        <strong>Jogador:</strong> ${playerName}<br>
+        <strong>Acertos Totais:</strong> ${gameStats.totalHits}<br>
+        <strong>Erros/Impactos Totais:</strong> ${gameStats.totalMisses}<br>
+        <strong>Tempo Total de Jogo:</strong> ${gameStats.totalTime} segundos
+    `;
+
+    endScreen.style.display = 'flex';
+    downloadCSVReport();
+}
+
+function downloadCSVReport() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "=== RELATORIO DE DESEMPENHO - DEFENSORES DA TERRA ===\n";
+    csvContent += `Jogador,${playerName}\n`;
+    csvContent += `Tempo Total de Jogo (s),${gameStats.totalTime}\n`;
+    csvContent += `Total de Acertos,${gameStats.totalHits}\n`;
+    csvContent += `Total de Erros,${gameStats.totalMisses}\n\n`;
+
+    csvContent += "Fase,Meteoro N,Velocidade Calculada (vf em s),Resultado,Tempo de Resposta (s)\n";
+
+    gameStats.phaseLogs.forEach(log => {
+        let res = log.correct ? "CORRETO" : "INCORRETO/IMPACTO";
+        csvContent += `${log.phase},${log.meteorNum},${log.vf},${res},${log.responseTime}\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `relatorio_jogo_${playerName.toLowerCase().replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+</body>
+</html>
